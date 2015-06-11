@@ -1,0 +1,64 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-signals/iron-signals.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="item-edit.html">
+
+<dom-module id="problem-list">
+	
+	<style>
+		:host { display: block; }
+		
+		table {
+			border: 1px solid lightgray;
+			@apply(--list-table);
+		}
+	</style>
+	
+	<template>
+		
+		<iron-ajax auto url="http://localhost:8888/problems" handle-as="json" last-response="{{problems}}"></iron-ajax>
+		<table class="pure-table">
+			<thead>
+				<tr><td>ID</td><td>标题</td><td>时间限制</td><td>空间限制</td><td>语言限制</td><td></td></tr>
+			</thead>
+			<tbody class="pure-table-odd">
+				<template is="dom-repeat" items="{{problems}}">
+					<tr>
+						<td>{{item.ID}}</td>
+						<td><item-edit problem="{{item}}" field="title" title="编辑 - 标题"></item-edit></td>
+						<td><item-edit problem="{{item}}" field="time_limit" validate="[0-9]" title="编辑 - 时间限制"></item-edit></td>
+						<td><item-edit problem="{{item}}" field="memory_limit" validate="[0-9]" title="编辑 - 内存限制"></item-edit></td>
+						<td><item-edit problem="{{item}}" field="language" bitfield="{{language_bit}}" title="编辑 - 语言限制"></item-edit></td>
+						<td><paper-button on-click="fire_edit">编辑</paper-button></td>
+					</tr>
+				</template>
+			</tbody>
+		</table>
+	</template>
+</dom-module>
+
+<script src="/assets/underscore.js"></script>
+<script src="/assets/blts.js"></script>
+
+<script>
+	Polymer({
+		is: 'problem-list',
+		
+		fire_edit: function (e) { this.fire('iron-signal', { name: 'edit-problem', data: e.model.item }); },
+			
+		properties: {
+			language_bit: {
+				type: Object,
+				value: function () {
+					return blts.array_object(
+							[ [ 0, 'C' ],
+							[ 1, 'C++' ] ],
+						[ 'id', 'name' ]); }
+			}
+		}
+	});
+</script>

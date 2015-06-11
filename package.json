@@ -1,0 +1,16 @@
+{
+  "name": "nodebk",
+  "version": "0.2.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "secondwtq <lovejay-lovemusic@outlook.com>",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "express": "^4.12.4",
+    "morgan": "^1.5.3",
+    "mysql": "^2.7.0"
+  }
+}

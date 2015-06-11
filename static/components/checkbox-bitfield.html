@@ -1,0 +1,41 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+
+<dom-module id="checkbox-bitfield">
+	<style>
+		.checkbox-wrapper + .checkbox-wrapper {
+			margin-top: 1em; }
+	</style>
+	
+	<template>
+		<template is="dom-repeat" items="{{bitfield}}">
+			<div class="checkbox-wrapper">
+				<paper-checkbox class="bitfield-check" on-checked-changed="checked_changed" 
+					checked="{{should_check(item, value)}}">{{item.name}}</paper-checkbox>
+			</div>
+		</template>
+	</template>
+</dom-module>
+
+<script src="/assets/blts.js"></script>
+
+<script>
+	Polymer({
+		is: 'checkbox-bitfield',
+		
+		properties: {
+			bitfield: Object,
+			value: { type: Number, notify: true }
+		},
+		
+		checked_changed: function (e, detail) {
+			var model = e.model.item;
+			if (model !== undefined) {
+				this.value = blts.setbit(this.value, model.id, detail.value); }
+		},
+		
+		should_check: function (data, value) { return blts.bitset(value, data.id); }
+	});
+</script>

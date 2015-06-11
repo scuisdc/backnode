@@ -1,0 +1,134 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="horizon-modal.html">
+<link rel="import" href="error-msg.html">
+
+<dom-module id="problem-detail">
+	<style>
+		.inner-wrapper {
+			padding: 1em; }
+		
+		.horizon-serperated {
+			display: flex;
+			justify-content: space-around;
+		}
+		
+		.horizon-serperated .horizon-div {
+			width: 100%;
+			padding: 0.5em 1em;
+		}
+		
+		.horizon-serperated .horizon-div-label {
+			flex-shrink: 0;
+			padding: 0.5em 1em;
+		}
+			
+		.grp-textarea.grp-vert textarea {
+			display: block;
+			width: 100%;
+		}
+		
+		.grp-vert label {
+			padding: 0.5em;
+			display: block;
+		}
+		
+		#i-desc {
+			width: 100%; }
+		
+		textarea {
+			min-height: 8em; }
+	</style>
+	
+	<template>
+		<div id="wrapper">
+			<horizon-modal id="modal">
+				<div class="inner-wrapper">
+					<div class="pure-form pure-form-aligned">
+						<fieldset>
+							<div class="pure-control-group">
+								<label for="i-title">标题: </label>
+								<input is="iron-input" id="i-title" bind-value="{{problem.title}}">
+								<div>
+									<paper-button>提交</paper-button>
+									<paper-button close-horizon>关闭</paper-button>
+								</div>
+							</div>
+							<div class="pure-control-group pure-u-1">
+								<span>
+									<label for="i-time">时间限制: </label>
+									<input is="iron-input" id="i-time" bind-value="{{problem.time_limit}}">
+								</span>
+								<span>
+									<label for="i-memory">空间限制: </label>
+									<input is="iron-input" id="i-memory" bind-value="{{problem.memory_limit}}">
+								</span>
+							</div>
+						</fieldset>
+					</div>
+					<div class="pure-form">
+						<div class="grp-vert">
+							<div class="horizon-div-label"><label for="i-desc">问题描述: </label></div>
+							<div class="horizon-div"><textarea id="i-desc"></textarea></div>
+						</div>
+						<div class="horizon-serperated">
+							<div class="horizon-div grp-textarea grp-vert">
+								<label for="i-input">示例输入: </label>
+								<textarea id="i-input"></textarea>
+							</div>
+							<div class="horizon-div grp-textarea grp-vert">
+								<label for="i-output">示例输出: </label>
+								<textarea id="i-output"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+			</horizon-modal>
+			<iron-ajax id="ajaxfetch" url="" handle-as="json" on-response="fetch_response" on-error="fetch_error"></iron-ajax>
+			<error-msg id="errormsg"></error-msg>
+		</div>
+	</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'problem-detail',
+		
+		properties: {
+			problem: {
+				type: Object,
+				notify: true
+			}
+		},
+		
+		open: function () {
+			this.$.modal.open();  },
+		
+		close: function () {
+			this.$.modal.close(); },
+			
+		fetch: function (id) {
+			if (id !== -1) {
+				this.$.ajaxfetch.param = JSON.stringify({ id: id });
+				this.$.ajaxfetch.url = 'http://localhost:8888/problems/' + id;
+				this.$.modal.dim();
+				this.$.ajaxfetch.generateRequest();
+			}
+		},
+		
+		fetch_response: function (e) {
+			this.problem = e.detail.response;
+			setTimeout(function (that) { that.$.modal.undim(); }, 100, this);
+		},
+		
+		fetch_error: function (res) {
+			this.$.errormsg.show(res.detail.error);
+			this.close(); }
+	
+	});
+</script>

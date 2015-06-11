@@ -1,0 +1,56 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
+
+<link rel="import" href="dimmed-behavior.html">
+
+<dom-module id="horizon-modal">
+	<style>
+		:host {
+			position: fixed;
+			width: 100%;
+			background-color: white;
+			top: 50%;
+			/* bottom: 0; */
+			margin: auto;
+			height: inherit;
+			transform: translate3d(0, -50%, 0);
+			max-height: 90%;
+			box-shadow: 0 0.3em 1em #333;
+			overflow: scroll;
+		}
+	</style>
+	<template>
+		<content></content>
+	</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'horizon-modal',
+		
+		properties: {
+			noCancelOnOutsideClick: {
+				type: Boolean, value: true },
+			withBackdrop: {
+				type: Boolean, value: true },
+		},
+		
+		listeners: {
+			'click': 'handle_click' },
+		
+		behaviors: [ DimmerBehavior, Polymer.IronOverlayBehavior ],
+		
+		handle_click: function (e) {
+			var t = e.target;
+			while (t !== this) {
+				if (t.hasAttribute('close-horizon')) {
+					this.close();
+					break;
+				}
+				t = t.parentNode;
+			}
+		}
+	});
+</script>

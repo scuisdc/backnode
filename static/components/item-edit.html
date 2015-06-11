@@ -1,0 +1,127 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+
+<link rel="import" href="valid-input.html">
+<link rel="import" href="vali-int.html">
+<link rel="import" href="checkbox-bitfield.html">
+
+<link rel="import" href="error-msg.html">
+
+<script src="/assets/blts.js"></script>
+
+<dom-module id="item-edit">
+	<style>
+		.view {
+			cursor: pointer; }
+		
+		.not-related {
+			position: absolute; }
+	</style>
+	
+	<template>
+		<div class="view" on-click="click_edit">{{value_display}}</div>
+		
+		<div class="not-related">
+			<iron-ajax id="ajax" url="http://localhost:8888/problems" method="POST" 
+				handle-as="json" on-response="update_finish" on-error="update_error"></iron-ajax>
+			
+			<paper-dialog id="editdialog" modal>
+				<h4>{{title}}</h4>
+				<div class="pure-form">
+					<template is="dom-if" if="{{use_bitfield(bitfield)}}">
+						<checkbox-bitfield bitfield="{{bitfield}}" value="{{value}}"></checkbox-bitfield>
+					</template>
+					<input is="iron-input" id="editbox" bind-value="{{value}}" hidden="{{use_bitfield(bitfield)}}"
+						prevent-invalid-input="{{have_validate(validate)}}" allowed-pattern="{{validate}}">
+				</div>
+				<div class="buttons">
+					<paper-button dialog-dismiss on-click="cancel_update">取消</paper-button>
+					<paper-button on-click="click_update">确定</paper-button>
+				</div>
+			</paper-dialog>
+			
+			<error-msg id="errormsg"></error-msg>
+		</div>
+	</template>
+</dom-module>
+
+<script>
+	
+	Polymer({
+		is: 'item-edit',
+		
+		properties: {
+			title: String,
+			field: String,
+			
+			problem: {
+				type: Object,
+				notify: true,
+				value: function () { return { }; }
+			},
+			
+			bitfield: {
+				type: Object,
+				value: undefined,
+				observer: 'bitfield_updated'
+			},
+			
+			validate: String,
+			
+			value: { type: Object, notify: true },
+			value_display: Object,
+		},
+		
+		observers: [ 'update_value(problem, field)' ],
+		
+		parse_display: function () {
+			if (this.use_bitfield(this.bitfield)) {
+				this.value_display = blts.join_str(this.value, this.bitfield).join(' / ');
+			} else { this.value_display = this.value; }
+			return this.value_display;
+		},
+		
+		update_value: function (problem, field) {
+			this.value = this.problem[this.field];
+			this.parse_display();
+		},
+		
+		click_edit: function () {
+			this.$.editdialog.open();
+			setTimeout(function (that) { that.$.editbox.focus(); }, 0, this);
+		},
+
+		click_update: function () {
+			var t = { ID: this.problem.ID };
+			t[this.field] = this.value;
+			
+			this.$.ajax.body = JSON.stringify([ t ]);
+			this.$.ajax.generateRequest();
+		},
+		
+		cancel_update: function () {
+			this.value = this.problem[this.field]; },
+		
+		update_finish: function (res) {
+			this.problem[this.field] = this.value;
+			this.parse_display();
+			this.$.editdialog.close(); },
+			
+		update_error: function (res) {
+			this.$.errormsg.show(res.detail.error); },
+			
+		have_validate: function (validate) { return !(validate.length === 0); },
+			
+		use_bitfield: function (bitfield) {
+			return !(bitfield === undefined); },
+			
+		bitfield_updated: function () { this.parse_display(); },
+	});
+
+</script>

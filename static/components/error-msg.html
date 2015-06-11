@@ -1,0 +1,35 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<dom-module id="error-msg">
+	<template>
+		<paper-dialog id="msg" modal="{{modal}}">
+			<div>{{info}}</div>
+			<div class="buttons">
+				<paper-button dialog-confirm>OK</paper-button>
+			</div>
+		</paper-dialog>
+	</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'error-msg',
+		
+		properties: {
+			info: String,
+			modal: {
+				type: Boolean,
+				value: false
+			}
+		},
+		
+		show: function (info) {
+			this.info = info;
+			this.$.msg.open();
+		}
+	});
+</script>

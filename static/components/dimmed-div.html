@@ -1,0 +1,53 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="dimmed-div">
+	<style>
+		:host {
+			position: relative;
+			display: block;
+			transition: opacity 0.5s;
+			opacity: 0;
+		}
+		
+		:host.dimmed {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			z-index: 233;
+			background-color: rgba(0, 0, 0, 0.3);
+			content: '';
+			display: block;
+			opacity: 1;
+			top: 0;
+		}
+	</style>
+	
+	<template><content></content></template>
+</dom-module>
+
+<script>
+	 Polymer({
+		 
+		is: 'dimmed-div',
+		
+		properties: {
+			dimmed: {
+				type: Boolean,
+				notify: true,
+				observer: 'dimmed_changed'
+			}	
+		},
+
+		dimmed_changed: function (value) {
+			if (value == true) {
+				this.classList.add('dimmed');
+			} else { this.classList.remove('dimmed'); }
+		},
+		
+		dim: function () {
+			this.dimmed = true; },
+		undim: function () {
+			this.dimmed = false; },
+	});
+</script>

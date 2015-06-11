@@ -1,0 +1,30 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="dimmed-div.html">
+
+<script>
+	DimmerBehavior = {
+		
+		properties: {
+			dimmed: {
+				type: Boolean,
+				notify: true,
+				observer: 'dimmed_changed'
+			}	
+		},
+		
+		created: function () {
+			this._dimmer = document.createElement('dimmed-div');
+			this.appendChild(this._dimmer);
+		},
+		
+		dimmed_changed: function (value) {
+			this._dimmer.dimmed = value; },
+		
+		dim: function () {
+			this.dimmed = true; },
+		undim: function () {
+			this.dimmed = false; },
+	};
+</script>

@@ -1,0 +1,39 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-signals/iron-signals.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
+
+<link rel="import" href="problem-list.html">
+<link rel="import" href="problem-detail.html">
+
+<dom-module id="backend-body">
+
+<style>
+	:host {
+		padding: 1em;
+		--list-table: {
+			margin: 0 auto;
+		};
+	}
+</style>
+	
+<template>
+	<problem-list></problem-list>
+	<iron-signals on-iron-signal-edit-problem="on_edit_problem"></iron-signals>
+	<problem-detail id="detail-editor"></problem-detail>
+</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'backend-body',
+		
+		on_edit_problem: function (data) {
+			var detail = this.$['detail-editor'];
+			detail.fetch(data.detail.ID);
+			detail.open();
+		}
+	});
+</script>
