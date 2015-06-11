@@ -40,6 +40,9 @@
 		
 		#i-desc {
 			width: 100%; }
+			
+		#button-group {
+			float: right; }
 		
 		textarea {
 			min-height: 8em; }
@@ -54,9 +57,9 @@
 							<div class="pure-control-group">
 								<label for="i-title">标题: </label>
 								<input is="iron-input" id="i-title" bind-value="{{problem.title}}">
-								<div>
-									<paper-button>提交</paper-button>
+								<div id="button-group">
 									<paper-button close-horizon>关闭</paper-button>
+									<paper-button>提交</paper-button>
 								</div>
 							</div>
 							<div class="pure-control-group pure-u-1">
