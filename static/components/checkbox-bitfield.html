@@ -5,8 +5,14 @@
 
 <dom-module id="checkbox-bitfield">
 	<style>
-		.checkbox-wrapper + .checkbox-wrapper {
-			margin-top: 1em; }
+		:host {
+			display: -webkit-flex;
+			display: flex;
+			-webkit-flex-direction: var(--checkbox-direction, column);
+			flex-direction: var(--checkbox-direction, column);
+		}
+		
+		.checkbox-wrapper { padding: 0.5em; }
 	</style>
 	
 	<template>

@@ -13,11 +13,21 @@ var db = require('../modules/bkdb');
 
 var check_n_throw = function (err) { if (err) { throw err; } };
 
-var file_keys = [ 'description', 'input', 'output' ];
 var problem_keys_whitelist = [
 	'description', 'input', 'output', 'language_limit',
 	'memory_limit', 'time_limit', 'title'	
 ];
+
+var file_keys = [ 'description', 'input', 'output' ];
+var file_keys_detail = [ 'description', 'input', 'output', 'in_file', 'out_file' ];
+var problem_keys_whitelist_common = [
+	'ID', 'description', 'input', 'output', 'language_limit',
+	'memory_limit', 'time_limit', 'title'
+];
+var problem_keys_whitelist_detail = [
+	'ID', 'description', 'input', 'output', 'language_limit',
+	'memory_limit', 'time_limit', 'title', 'in_file', 'out_file'
+]
 
 var split_update_request = function (arr, ignore) {
 	ignore = ignore || file_keys;
@@ -37,7 +47,7 @@ var split_update_request = function (arr, ignore) {
 };
 
 var merge_update_request = function (arr, include) {
-	include = include || file_keys;
+	include = include || file_keys_detail;
 	var ret_obj = { };
 	
 	arr.forEach(function (element, index, array) {
@@ -60,37 +70,6 @@ _.mixin({ values_for_keys: function (obj, arr) {
 	return ret; 
 }});
 
-router.get('/', function (req, res, next) {
-	db.connect('train').query('select ID, title, time_limit, memory_limit, language_limit from oj_problem order by ID', 
-		function (err, rows, fields) {
-			check_n_throw(err);
-			res.json(rows);
-		});
-});
-
-// codereview.stackexchange.com/questions/59767/read-multiple-files-async
-router.get('/:id', function (req, res, next) {
-	db.connect('train').query('select * from oj_problem where ID = ?', 
-		[ req.params.id ], function (err, rows, fields) {
-			check_n_throw(err);
-			if (rows.length < 1) {
-				res.status(404).send('Not found'); }
-			
-			if (config.production) {
-				var files = _.chain(rows[0]).values_for_keys(file_keys).map(function (src) { return path.join(config.train_rootdir, src); }).value();
-				async.map(files, fs.readFile, function (err, data) {
-					if (err) {
-						res.status(500).send(err.code);
-						return;
-					}
-					
-					_(rows[0]).extend(_(file_keys).object(_(data).invoke('toString')));
-					return res.status(200).json(rows[0]);
-				});
-			} else { return res.status(200).json(rows[0]); }
-		});
-});
-
 var require_privilege = function (privilege) {
 	return function (req, res, next) {
 		if (req.user) {
@@ -101,8 +80,57 @@ var require_privilege = function (privilege) {
 	};
 };
 
+var fetch_problem_data = function (id, whitelist, file_keys, callback) {
+	db.connect('train').query('select * from oj_problem where ID = ?', [ id ],
+		function (err, rows, fields) {
+			if (err) { return callback(err); }
+			if (!rows || rows.length < 1) { return callback(new Error('Not found')); }
+			
+			rows = _(rows[0]).pick(whitelist);
+			if (!config.production) {
+				return callback(null, rows);
+			} else {
+				var files = _.chain(rows).values_for_keys(file_keys).map(function (src) {
+					return path.join(config.train_rootdir, src); }).value();
+				async.map(files, fs.readFile, function (err, data) {
+					if (err) { return callback(err); }
+					
+					_(rows).extend(_(file_keys).object(_(data).invoke('toString')));
+					return callback(null, rows);
+				});
+			}
+		});
+};
+
+router.get('/', function (req, res, next) {
+	db.connect('train').query('select ID, title, time_limit, memory_limit, language_limit from oj_problem order by ID', 
+		function (err, rows, fields) {
+			check_n_throw(err);
+			res.json(rows);
+		});
+});
+
+// codereview.stackexchange.com/questions/59767/read-multiple-files-async
+router.get('/:id', function (req, res, next) {
+	fetch_problem_data(req.params.id, problem_keys_whitelist_common, file_keys,
+		function (err, row) {
+			if (err) {
+				if (err.message == 'Not found') { return res.status(404).send('Not found' ); }
+				else { return res.status(500).json(err); }
+			}
+			res.status(200).json(row);
+		});
+});
+
 router.get('/:id/detail', require_privilege('oj'), function (req, res, next) {
-	
+	fetch_problem_data(req.params.id, problem_keys_whitelist_detail, file_keys_detail,
+		function (err, row) {
+			if (err) {
+				if (err.message == 'Not found') { return res.status(404).send('Not found' ); }
+				else { return res.status(500).json(err); }
+			}
+			res.status(200).json(row);
+		});
 });
 
 router.post('/:id', require_privilege('oj'), function (req, res, next) {
@@ -129,24 +157,21 @@ router.post('/:id', require_privilege('oj'), function (req, res, next) {
 					if (err) { connection.rollback(function () { throw err; }); }
 					else {
 						var file_reqs = merge_update_request(req.body);
-						if (file_reqs.length || !config.production) {
+						if (file_reqs.length && config.production) {
 							async.map(file_reqs, function (file_req, callback) {
-								connection.query('select * from oj_problem where ID = ?', [ file_req.ID ], 
-									function (err, result) {
-										if (err) { return callback(err); }
+								async.waterfall([
+									function (callback) {
+										connection.query('select * from oj_problem where ID = ?', [ file_req.ID ], 
+											function (err, result) { callback(err, result); }); },
+									function (result, callback) {
 										result = _(result).first();
 										file_req = _.chain(file_req).omit('ID').pairs().value();
 										async.map(file_req, function (req, callback) {
 											var fullpath = path.join(config.train_rootdir, result[req[0]]);
-											fs.writeFile(fullpath, req[1],
-												function (err) {
-													if (err) { return callback(err); }
-													callback(null, undefined);
-												});
-										}, function (err, data) {
-											if (err) { return callback(err); }
-											callback(null, undefined); });
-									});
+											fs.writeFile(fullpath, req[1], function (err) { return callback(err, undefined); });
+										}, function (err, data) { return callback(err, undefined); });
+									}
+								], function (err, data) { return callback(err, undefined); });
 							}, function (err, data) {
 								if (err) { return res.status(500).send(err.code); }
 								res.status(200).send();

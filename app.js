@@ -61,9 +61,9 @@ app.use(function (req, res, next) {
 	return next();
 });
 
-app.use(function (err, req, res, next) {
-	res.status(500).json(err);
-});
+// app.use(function (err, req, res, next) {
+// 	res.status(500).json(err);
+// });
 
 var route_auth = require('./routes/auth');
 app.use('/user', route_auth);

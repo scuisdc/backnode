@@ -29,6 +29,10 @@
 	
 	.toolbar-any {
 		margin-left: 1em; }
+		
+	h2 {
+		text-align: center;
+	}
 </style>
 	
 <template>
@@ -51,9 +55,10 @@
 			</div>
 		</div>
 	</div>
-	<problem-list></problem-list>
+	<h2>训练平台 后台管理</h2>
+	<problem-list language-bit="[[languageBit]]"></problem-list>
 	<iron-signals on-iron-signal-edit-problem="on_edit_problem"></iron-signals>
-	<problem-detail id="detail-editor"></problem-detail>
+	<problem-detail id="detail-editor" language-bit="[[languageBit]]"></problem-detail>
 </template>
 </dom-module>
 
@@ -62,6 +67,18 @@
 		is: 'backend-body',
 		
 		behaviors: [ AuthBehavior ],
+		
+		properties: {
+			languageBit: {
+				type: Object,
+				notify: true,
+				value: function () {
+					return blts.array_object(
+							[ [ 0, 'C' ],
+							[ 1, 'C++' ] ],
+						[ 'id', 'name' ]); }
+			}
+		},
 		
 		on_edit_problem: function (data) {
 			var detail = this.$['detail-editor'];

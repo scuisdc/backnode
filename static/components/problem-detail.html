@@ -9,6 +9,7 @@
 <link rel="import" href="error-msg.html">
 <link rel="import" href="auth-behavior.html">
 <link rel="import" href="problem-testcase.html">
+<link rel="import" href="checkbox-bitfield.html">
 
 <dom-module id="problem-detail">
 	<link rel="stylesheet" href="/assets/pure-min.css">
@@ -51,6 +52,10 @@
 		
 		textarea {
 			min-height: 8em; }
+			
+		checkbox-bitfield {
+			--checkbox-direction: row;
+		}
 	</style>
 	
 	<template>
@@ -77,6 +82,9 @@
 									<label for="i-memory">空间限制: </label>
 									<input is="iron-input" id="i-memory" bind-value="{{problem.memory_limit}}" readonly$="[[!authed]]">
 								</span>
+							</div>
+							<div>
+								<checkbox-bitfield bitfield="[[languageBit]]" value="{{problem.language_limit}}" disabled="[[!authed]]"></checkbox-bitfield>
 							</div>
 						</fieldset>
 					</div>
@@ -115,7 +123,8 @@
 			problem: {
 				type: Object,
 				notify: true
-			}
+			},
+			languageBit: Object
 		},
 		
 		behaviors: [ AuthBehavior ],
@@ -143,6 +152,7 @@
 			this.close(); },
 			
 		more_detail_open: function () {
+			this.$.testcases.fetch(this.problem.ID);
 			this.$.testcases.open(); },
 			
 		update_upstream: function () {

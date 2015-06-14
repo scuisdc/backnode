@@ -48,7 +48,7 @@
 							<td><item-edit problem="{{item}}" field="title" title="编辑 - 标题"></item-edit></td>
 							<td><item-edit problem="{{item}}" field="time_limit" validate="[0-9]" title="编辑 - 时间限制"></item-edit></td>
 							<td><item-edit problem="{{item}}" field="memory_limit" validate="[0-9]" title="编辑 - 内存限制"></item-edit></td>
-							<td><item-edit problem="{{item}}" field="language_limit" bitfield="{{language_bit}}" title="编辑 - 语言限制"></item-edit></td>
+							<td><item-edit problem="{{item}}" field="language_limit" bitfield="{{languageBit}}" title="编辑 - 语言限制"></item-edit></td>
 							<td><paper-icon-button icon="editor:mode-edit" on-click="fire_edit"></paper-icon-button></td>
 						</tr>
 					</template>
@@ -67,15 +67,6 @@
 		
 		fire_edit: function (e) { this.fire('iron-signal', { name: 'edit-problem', data: e.model.item }); },
 			
-		properties: {
-			language_bit: {
-				type: Object,
-				value: function () {
-					return blts.array_object(
-							[ [ 0, 'C' ],
-							[ 1, 'C++' ] ],
-						[ 'id', 'name' ]); }
-			}
-		}
+		properties: { languageBit: { type: Object, notify: true } }
 	});
 </script>
