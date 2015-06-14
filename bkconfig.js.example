@@ -10,6 +10,8 @@ var config = {
 	
 	session_secret: 'donotleakit',
 	
+	train_rootdir: '/anywhere/you/want/and/can',
+	
 	production: false
 };
 
