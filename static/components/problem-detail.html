@@ -65,7 +65,7 @@
 								<div id="button-group">
 									<paper-button close-horizon>关闭</paper-button>
 									<paper-button disabled="[[!authed]]" on-click="more_detail_open">编辑测试用例</paper-button>
-									<paper-button disabled="[[!authed]]">提交</paper-button>
+									<paper-button disabled="[[!authed]]" on-click="update_upstream">提交</paper-button>
 								</div>
 							</div>
 							<div class="pure-control-group pure-u-1">
@@ -83,16 +83,16 @@
 					<div class="pure-form">
 						<div class="grp-vert">
 							<div class="horizon-div-label"><label for="i-desc">问题描述: </label></div>
-							<div class="horizon-div"><textarea id="i-desc" readonly$="[[!authed]]">{{problem.description}}</textarea></div>
+							<div class="horizon-div"><textarea id="i-desc" readonly$="[[!authed]]" value="{{problem.description::input}}"></textarea></div>
 						</div>
 						<div class="horizon-serperated">
 							<div class="horizon-div grp-textarea grp-vert">
 								<label for="i-input">示例输入: </label>
-								<textarea id="i-input" readonly$="[[!authed]]">{{problem.input}}</textarea>
+								<textarea id="i-input" readonly$="[[!authed]]" value="{{problem.input::input}}"></textarea>
 							</div>
 							<div class="horizon-div grp-textarea grp-vert">
 								<label for="i-output">示例输出: </label>
-								<textarea id="i-output" readonly$="[[!authed]]">{{problem.output}}</textarea>
+								<textarea id="i-output" readonly$="[[!authed]]" value="{{problem.output::input}}"></textarea>
 							</div>
 						</div>
 					</div>
@@ -100,6 +100,8 @@
 			</horizon-modal>
 			<problem-testcase id="testcases"></problem-testcase>
 			<iron-ajax id="ajaxfetch" url="" handle-as="json" on-response="fetch_response" on-error="fetch_error"></iron-ajax>
+			<iron-ajax id="ajaxpost" url="" method="POST" handle-as="json" content-type="application/json"
+				on-response="update_response" on-error="update_error"></iron-ajax>
 			<error-msg id="errormsg"></error-msg>
 		</div>
 	</template>
@@ -141,7 +143,24 @@
 			this.close(); },
 			
 		more_detail_open: function () {
-			this.$.testcases.open(); }
+			this.$.testcases.open(); },
+			
+		update_upstream: function () {
+			this.$.ajaxpost.body = JSON.stringify([ this.problem ]);
+			this.$.ajaxpost.url = '/problems/' + this.problem.ID;
+			this.$.ajaxpost.generateRequest();
+			this.$.modal.dim();
+		},
+		
+		update_response: function (e) {
+			this.$.modal.undim();
+			this.close();
+		},
+		
+		update_error: function (e) {
+			this.$.errormsg.show(e.detail.error);
+			this.$.modal.undim();
+		}
 	
 	});
 </script>

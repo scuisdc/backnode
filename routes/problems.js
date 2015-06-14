@@ -13,11 +13,18 @@ var db = require('../modules/bkdb');
 
 var check_n_throw = function (err) { if (err) { throw err; } };
 
-var split_update_request = function (arr) {
+var file_keys = [ 'description', 'input', 'output' ];
+var problem_keys_whitelist = [
+	'description', 'input', 'output', 'language_limit',
+	'memory_limit', 'time_limit', 'title'	
+];
+
+var split_update_request = function (arr, ignore) {
+	ignore = ignore || file_keys;
 	var ret = [ ];
 	
 	arr.forEach(function (element, index, array) {
-		for (var k in element) {
+		for (var k in _.chain(element).omit(ignore).pick(problem_keys_whitelist).value()) {
 			if (k != 'ID') {
 				var pushed = { 'ID': element['ID'] };
 				pushed[k] = element[k];
@@ -27,6 +34,23 @@ var split_update_request = function (arr) {
 	});
 	
 	return ret;
+};
+
+var merge_update_request = function (arr, include) {
+	include = include || file_keys;
+	var ret_obj = { };
+	
+	arr.forEach(function (element, index, array) {
+		element = _(element).pick(include, 'ID');
+		var id = element.ID;
+		if (_(element).keys().length > 1) {
+			if (ret_obj[id] !== undefined) {
+				_(ret_obj[id]).extend(element);
+			} else { ret_obj[id] = element; }
+		}
+	});
+	
+	return _(ret_obj).values();
 };
 
 _.mixin({ values_for_keys: function (obj, arr) {
@@ -53,7 +77,6 @@ router.get('/:id', function (req, res, next) {
 				res.status(404).send('Not found'); }
 			
 			if (config.production) {
-				var file_keys = [ 'description', 'input', 'output' ];
 				var files = _.chain(rows[0]).values_for_keys(file_keys).map(function (src) { return path.join(config.train_rootdir, src); }).value();
 				async.map(files, fs.readFile, function (err, data) {
 					if (err) {
@@ -75,7 +98,7 @@ var require_privilege = function (privilege) {
 				return res.status(401).json({ succeeded: false }); }
 			next();
 		} else { return res.status(401).json({ succeeded: false }); }
-	}
+	};
 };
 
 router.get('/:id/detail', require_privilege('oj'), function (req, res, next) {
@@ -104,7 +127,32 @@ router.post('/:id', require_privilege('oj'), function (req, res, next) {
 			} else {
 				connection.commit(function (err) {
 					if (err) { connection.rollback(function () { throw err; }); }
-					else { res.status(200).send(); }
+					else {
+						var file_reqs = merge_update_request(req.body);
+						if (file_reqs.length || !config.production) {
+							async.map(file_reqs, function (file_req, callback) {
+								connection.query('select * from oj_problem where ID = ?', [ file_req.ID ], 
+									function (err, result) {
+										if (err) { return callback(err); }
+										result = _(result).first();
+										file_req = _.chain(file_req).omit('ID').pairs().value();
+										async.map(file_req, function (req, callback) {
+											var fullpath = path.join(config.train_rootdir, result[req[0]]);
+											fs.writeFile(fullpath, req[1],
+												function (err) {
+													if (err) { return callback(err); }
+													callback(null, undefined);
+												});
+										}, function (err, data) {
+											if (err) { return callback(err); }
+											callback(null, undefined); });
+									});
+							}, function (err, data) {
+								if (err) { return res.status(500).send(err.code); }
+								res.status(200).send();
+							});
+						} else { res.status(200).send(); }
+					}
 				});
 			}
 		};

@@ -61,6 +61,10 @@ app.use(function (req, res, next) {
 	return next();
 });
 
+app.use(function (err, req, res, next) {
+	res.status(500).json(err);
+});
+
 var route_auth = require('./routes/auth');
 app.use('/user', route_auth);
 
@@ -72,4 +76,9 @@ var server = app.listen(process.env.PORT || 8888, process.env.HOST || 'localhost
 	var port = server.address().port;
 
 	console.log('Listening @ http://%s:%s', host, port);
+});
+
+process.on('uncaughtException', function(err) { 
+    console.log("** UNCAUGHT EXCEPTION **");
+    console.log(err.stack || err.message);
 });
