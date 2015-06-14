@@ -1,0 +1,19 @@
+
+var config = {
+	db_host: 'yourmotherboom.com',
+	db_port: 6666,
+	db_username: 'yourusername',
+	db_passwd: 'yourpassword',
+	
+	dbname_train: 'dbforoj',
+	dbname_usercenter: 'dbforuc',
+	
+	session_secret: 'donotleakit',
+	
+	production: false
+};
+
+if (process.env.DEBUG !== undefined) {
+	config.production = !(Boolean(parseInt(process.env.DEBUG))); }
+
+module.exports = config;

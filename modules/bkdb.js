@@ -1,7 +1,7 @@
 
 var mysql = require('mysql');
 
-var config = require('./bkconfig');
+var config = require('../bkconfig');
 
 var _ = require('underscore');
 
@@ -26,23 +26,21 @@ var db_config_train = _.copy_extend(db_config_common, {
 var db_config_usercenter = _.copy_extend(db_config_common, {
 	database: config.dbname_usercenter });
 	
+var db_namemap = {
+	'train': db_config_train,
+	'user': db_config_usercenter	
+};
+	
 var get_config = function (config, def) {
 	if (config === undefined) {
 		return get_config(def, { });
 	} else if (typeof config === 'object') {
 		return config; // we need a check for properties needed
 	} else {
-		switch (config.toLowerCase()) {
-			case 'train':
-				return db_config_train;
-				break;
-			case 'user':
-				return db_config_usercenter;
-				break;
-			default:
-				throw new Error("I'm sorry but I dont know which config u want.");
-				break;
-		}
+		config = config.toLowerCase();
+		if (db_namemap[config]) {
+			return db_namemap[config];
+		} else { throw new Error("I'm sorry but I dont know which config u want."); }
 	}
 }
 

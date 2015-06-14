@@ -1,0 +1,72 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-signals/iron-signals.html">
+
+<script>
+	"use strict";
+	
+	var AuthBehavior = {
+		
+		properties: {
+			authed: {
+				type: Boolean,
+				readOnly: true,
+				notify: true,
+			},
+			user: {
+				type: Object,
+				notify: true,
+				computed: '_get_user(authed)'
+			}
+		},
+		
+		get status_div () {
+			// return document.querySelectorAll('html ' + "\/" + 'deep' + "\/" + ' auth-status')[0];
+			return document.getElementsByTagName('auth-status')[0];
+		},
+		
+		get loggedin () {
+			return this.status_div.loggedin(); },
+			
+		_get_user: function (authed) {
+			if (this.loggedin) {
+				return this.status_div.user;
+			} else {
+				return undefined; }
+		},
+		
+		created: function () {
+			this._auth_signal = document.createElement('iron-signals');
+			var that = this;
+			this._auth_signal.addEventListener('iron-signal-auth-changed', function () {
+				if (that.loggedin) {
+					that._setAuthed(true);
+				} else { that._setAuthed(false); }
+				console.log('iron-signal-auth-changed - ', that.authed);
+			}, false);
+		},
+		
+		attached: function () {
+			this.appendChild(this._auth_signal);
+			if (this.status_div) {
+				this._setAuthed(this.status_div.loggedin()); }
+		},
+		
+		login: function (user) {
+			this.status_div.login(user);
+			this.notify_user();
+		},
+		
+		logout: function () {
+			this.status_div.logout();
+			this.notifyPath('user.*', undefined);
+		},
+		
+		notify_user: function () {
+			for (var prop in this.user) {
+				this.notifyPath('user.' + prop, this.user[prop]); }
+		}
+		
+	};
+</script>

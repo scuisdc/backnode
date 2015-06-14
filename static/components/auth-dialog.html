@@ -1,0 +1,77 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+
+<link rel="import" href="auth-behavior.html">
+<link rel="import" href="error-msg.html">
+
+<dom-module id="auth-dialog">
+	<link type="text/css" rel="stylesheet" href="/assets/pure-min.css" scope="html /deep/ ">
+	<template>
+		
+		<div>
+			<paper-dialog id="authdialog">
+				<h4>登录</h4>
+				<form class="pure-form pure-form-stacked">
+					<fieldset>
+						<label>用户名</label>
+						<input is="iron-input" id="txtusername">
+						<label>密码</label>
+						<input is="iron-input" type="password" id="txtpasswd">
+					</fieldset>
+				</form>
+				<div class="buttons">
+					<paper-button dialog-dismiss>取消</paper-button>
+					<paper-button on-click="login_click">确定</paper-button>
+				</div>
+			</paper-dialog>
+			<iron-ajax id="ajax" method="POST" handle-as="json" content-type="application/json" 
+				on-response="login_finish" on-error="login_error"></iron-ajax>
+			<error-msg id="errormsg"></error-msg>
+		</div>
+	</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'auth-dialog',
+		
+		properties: {
+			crypto_func: {
+				type: Function,
+				value: function () { return function (src) { return src; }; }
+			}
+		},
+		
+		behaviors: [ AuthBehavior ],
+		
+		show: function () {
+			if (!this.loggedin) {
+				this.$.authdialog.open();
+				setTimeout(function (that) { that.$.txtusername.focus(); }, 0, this);
+			} else { console.log('auth-dialog::show - you have already logged in!'); }
+		},
+		
+		login_click: function () {
+			var username = this.crypto_func(this.$.txtusername.value);
+			var passwd = this.crypto_func(this.$.txtpasswd.value);
+			
+			this.$.ajax.url = "/user/auth";
+			this.$.ajax.body = JSON.stringify({ username: username, password: passwd });
+			this.$.ajax.generateRequest();
+		},
+		
+		login_finish: function (e) {
+			this.$.authdialog.close();
+			this.login(this.status_div.extract_user(e.detail.response));
+		},
+		
+		login_error: function (e) {
+			this.$.errormsg.show('登录失败');
+			this.$.txtpasswd.value = ''; }
+	});
+</script>

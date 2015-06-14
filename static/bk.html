@@ -1,12 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
+	
+	<meta charset="utf-8">
+	<title>ISDCNext 管理后台</title>
+	
 	<script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+	<script>
+		window.Polymer = window.Polymer || { };
+		// window.Polymer.dom = 'shadow';
+	</script>
 
 	<link rel="import" href="components/backend-body.html">
 	
 	<link rel="stylesheet" href="assets/normalize.css">
-	<link rel="stylesheet" href="assets/pure.css">
+	<link rel="stylesheet" href="assets/pure-min.css">
+
+	<style>
+		body {
+			background-color: #fafafa; }
+	</style>
 
 </head>
 
@@ -14,8 +27,8 @@
 	
 	<backend-body></backend-body>
 	
-	<script src="assets/underscore.js"></script>
-	<script src="assets/zepto.js"></script>
+	<script src="assets/underscore-min.js"></script>
+	<script src="assets/zepto.min.js"></script>
 	
 </body>
 </html>

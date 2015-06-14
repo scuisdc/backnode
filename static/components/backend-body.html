@@ -3,10 +3,15 @@
 
 <link rel="import" href="../bower_components/iron-signals/iron-signals.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
 
 <link rel="import" href="problem-list.html">
 <link rel="import" href="problem-detail.html">
+<link rel="import" href="auth-status.html">
+<link rel="import" href="auth-dialog.html">
+<link rel="import" href="auth-behavior.html">
 
 <dom-module id="backend-body">
 
@@ -16,10 +21,36 @@
 		--list-table: {
 			margin: 0 auto;
 		};
+		
 	}
+	
+	paper-icon-button {
+		color: gray; }
+	
+	.toolbar-any {
+		margin-left: 1em; }
 </style>
 	
 <template>
+	<auth-status></auth-status>
+	<div>
+		<div class="toolbar-any" hidden="{{authed}}">
+			<auth-dialog id="authdialog"></auth-dialog>
+			<paper-icon-button icon="account-circle" on-click="show_login"></paper-icon-button>
+		</div>
+		<div hidden="{{!authed}}">
+			<div class="pure-menu pure-menu-horizontal">
+				<ul class="pure-menu-list">
+					<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+						<a class="pure-menu-link">{{user.username}}</a>
+						<ul class="pure-menu-children" hidden="{{!authed}}">
+							<li class="pure-menu-item"><a on-click="logout" class="pure-menu-link">登出</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
 	<problem-list></problem-list>
 	<iron-signals on-iron-signal-edit-problem="on_edit_problem"></iron-signals>
 	<problem-detail id="detail-editor"></problem-detail>
@@ -30,10 +61,16 @@
 	Polymer({
 		is: 'backend-body',
 		
+		behaviors: [ AuthBehavior ],
+		
 		on_edit_problem: function (data) {
 			var detail = this.$['detail-editor'];
 			detail.fetch(data.detail.ID);
 			detail.open();
+		},
+		
+		show_login: function () {
+			this.$.authdialog.show();
 		}
 	});
 </script>

@@ -4,40 +4,57 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-signals/iron-signals.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
 
 <link rel="import" href="item-edit.html">
 
 <dom-module id="problem-list">
-	
+	<link rel="stylesheet" href="/assets/pure-min.css">
 	<style>
-		:host { display: block; }
+		:host {
+			display: -webkit-flex;
+			display: flex;
+			-webkit-justify-content: center;
+			justify-content: center;
+		}
 		
 		table {
 			border: 1px solid lightgray;
 			@apply(--list-table);
 		}
+		
+		table thead {
+			text-align: center; }
+		
+		paper-icon-button {
+			color: gray; }
 	</style>
 	
 	<template>
 		
-		<iron-ajax auto url="http://localhost:8888/problems" handle-as="json" last-response="{{problems}}"></iron-ajax>
-		<table class="pure-table">
-			<thead>
-				<tr><td>ID</td><td>标题</td><td>时间限制</td><td>空间限制</td><td>语言限制</td><td></td></tr>
-			</thead>
-			<tbody class="pure-table-odd">
-				<template is="dom-repeat" items="{{problems}}">
-					<tr>
-						<td>{{item.ID}}</td>
-						<td><item-edit problem="{{item}}" field="title" title="编辑 - 标题"></item-edit></td>
-						<td><item-edit problem="{{item}}" field="time_limit" validate="[0-9]" title="编辑 - 时间限制"></item-edit></td>
-						<td><item-edit problem="{{item}}" field="memory_limit" validate="[0-9]" title="编辑 - 内存限制"></item-edit></td>
-						<td><item-edit problem="{{item}}" field="language_limit" bitfield="{{language_bit}}" title="编辑 - 语言限制"></item-edit></td>
-						<td><paper-button on-click="fire_edit">编辑</paper-button></td>
-					</tr>
-				</template>
-			</tbody>
-		</table>
+		<iron-ajax auto url="/problems" handle-as="json" last-response="{{problems}}"></iron-ajax>
+		<paper-material>
+			<table class="pure-table pure-table-horizontal">
+				<thead>
+					<tr><td>ID</td><td>标题</td><td>时间限制</td><td>空间限制</td><td>语言限制</td><td></td></tr>
+				</thead>
+				<tbody class="pure-table-odd">
+					<template is="dom-repeat" items="{{problems}}">
+						<tr>
+							<td>{{item.ID}}</td>
+							<td><item-edit problem="{{item}}" field="title" title="编辑 - 标题"></item-edit></td>
+							<td><item-edit problem="{{item}}" field="time_limit" validate="[0-9]" title="编辑 - 时间限制"></item-edit></td>
+							<td><item-edit problem="{{item}}" field="memory_limit" validate="[0-9]" title="编辑 - 内存限制"></item-edit></td>
+							<td><item-edit problem="{{item}}" field="language_limit" bitfield="{{language_bit}}" title="编辑 - 语言限制"></item-edit></td>
+							<td><paper-icon-button icon="editor:mode-edit" on-click="fire_edit"></paper-icon-button></td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+		</paper-material>
 	</template>
 </dom-module>
 

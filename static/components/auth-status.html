@@ -1,0 +1,66 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="auth-status">
+	<template>
+		<iron-ajax auto id="ajax" url="/user/auth" method="GET" on-response="login_check_res" on-error="login_error"></iron-ajax>
+		<iron-ajax id="ajax_logout" url="/user/logout" method="POST" on-response="logout_success" on-error="logout_error"></iron-ajax>
+	</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'auth-status',
+		
+		properties: {
+			user: {
+				type: Object,
+				value: undefined,
+				readOnly: true,
+				notify: true
+			},
+			extract_user: {
+				type: Function,
+				value: function () { return function (src) { return src.user; }; }
+			}
+		},
+		
+		loggedin: function () { return !(this.user === undefined); },
+
+		login: function (user) {
+			if (this.user === undefined) {
+				this._setUser(user);
+				this.fire('iron-signal', { name: 'auth-changed', data: { action: 'login', user: 'user' } });
+			} else { console.log('auth-status::login - you have already logged in!'); }
+		},
+		
+		logout: function () {
+			if (this.user !== undefined) {
+				this.$.ajax_logout.generateRequest();
+			} else { console.log('auth-status::logout - you havenot logged in!'); }
+		},
+		
+		logout_success: function () {
+			this._setUser(undefined);
+			this.fire('iron-signal', { name: 'auth-changed', data: { action: 'logout' } });
+		},
+		
+		logout_error: function () {
+			
+		},
+		
+		login_error: function () {
+			this._setUser(undefined);
+			this.fire('iron-signal', { name: 'auth-changed', data: { action: 'update', user: undefined } })
+		},
+		
+		login_check_res: function (e) {
+			var res = e.detail.response;
+			if (res.succeeded) {
+				this.login(res.user); }
+		}
+		
+	});
+</script>

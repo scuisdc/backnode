@@ -7,13 +7,17 @@
 
 <link rel="import" href="horizon-modal.html">
 <link rel="import" href="error-msg.html">
+<link rel="import" href="auth-behavior.html">
+<link rel="import" href="problem-testcase.html">
 
 <dom-module id="problem-detail">
+	<link rel="stylesheet" href="/assets/pure-min.css">
 	<style>
 		.inner-wrapper {
 			padding: 1em; }
 		
 		.horizon-serperated {
+			display: -webkit-flex;
 			display: flex;
 			justify-content: space-around;
 		}
@@ -24,6 +28,7 @@
 		}
 		
 		.horizon-serperated .horizon-div-label {
+			-webkit-flex-shrink: 0;
 			flex-shrink: 0;
 			padding: 0.5em 1em;
 		}
@@ -56,20 +61,21 @@
 						<fieldset>
 							<div class="pure-control-group">
 								<label for="i-title">标题: </label>
-								<input is="iron-input" id="i-title" bind-value="{{problem.title}}">
+								<input is="iron-input" id="i-title" bind-value="{{problem.title}}" readonly$="[[!authed]]">
 								<div id="button-group">
 									<paper-button close-horizon>关闭</paper-button>
-									<paper-button>提交</paper-button>
+									<paper-button disabled="[[!authed]]" on-click="more_detail_open">编辑测试用例</paper-button>
+									<paper-button disabled="[[!authed]]">提交</paper-button>
 								</div>
 							</div>
 							<div class="pure-control-group pure-u-1">
 								<span>
 									<label for="i-time">时间限制: </label>
-									<input is="iron-input" id="i-time" bind-value="{{problem.time_limit}}">
+									<input is="iron-input" id="i-time" bind-value="{{problem.time_limit}}" readonly$="[[!authed]]">
 								</span>
 								<span>
 									<label for="i-memory">空间限制: </label>
-									<input is="iron-input" id="i-memory" bind-value="{{problem.memory_limit}}">
+									<input is="iron-input" id="i-memory" bind-value="{{problem.memory_limit}}" readonly$="[[!authed]]">
 								</span>
 							</div>
 						</fieldset>
@@ -77,21 +83,22 @@
 					<div class="pure-form">
 						<div class="grp-vert">
 							<div class="horizon-div-label"><label for="i-desc">问题描述: </label></div>
-							<div class="horizon-div"><textarea id="i-desc"></textarea></div>
+							<div class="horizon-div"><textarea id="i-desc" readonly$="[[!authed]]">{{problem.description}}</textarea></div>
 						</div>
 						<div class="horizon-serperated">
 							<div class="horizon-div grp-textarea grp-vert">
 								<label for="i-input">示例输入: </label>
-								<textarea id="i-input"></textarea>
+								<textarea id="i-input" readonly$="[[!authed]]">{{problem.input}}</textarea>
 							</div>
 							<div class="horizon-div grp-textarea grp-vert">
 								<label for="i-output">示例输出: </label>
-								<textarea id="i-output"></textarea>
+								<textarea id="i-output" readonly$="[[!authed]]">{{problem.output}}</textarea>
 							</div>
 						</div>
 					</div>
 				</div>
 			</horizon-modal>
+			<problem-testcase id="testcases"></problem-testcase>
 			<iron-ajax id="ajaxfetch" url="" handle-as="json" on-response="fetch_response" on-error="fetch_error"></iron-ajax>
 			<error-msg id="errormsg"></error-msg>
 		</div>
@@ -109,16 +116,16 @@
 			}
 		},
 		
-		open: function () {
-			this.$.modal.open();  },
+		behaviors: [ AuthBehavior ],
 		
-		close: function () {
-			this.$.modal.close(); },
+		open: function () { this.$.modal.open();  },
+		
+		close: function () { this.$.modal.close(); },
 			
 		fetch: function (id) {
 			if (id !== -1) {
 				this.$.ajaxfetch.param = JSON.stringify({ id: id });
-				this.$.ajaxfetch.url = 'http://localhost:8888/problems/' + id;
+				this.$.ajaxfetch.url = '/problems/' + id;
 				this.$.modal.dim();
 				this.$.ajaxfetch.generateRequest();
 			}
@@ -131,7 +138,10 @@
 		
 		fetch_error: function (res) {
 			this.$.errormsg.show(res.detail.error);
-			this.close(); }
+			this.close(); },
+			
+		more_detail_open: function () {
+			this.$.testcases.open(); }
 	
 	});
 </script>

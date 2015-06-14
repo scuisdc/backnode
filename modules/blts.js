@@ -1,7 +1,7 @@
-/// <reference path="../../typings/underscore/underscore.d.ts"/>
-/* global blts */
 
-blts = { };
+var _ = require('underscore');
+
+var blts = { };
 
 var bitset = function (num, bit) {
 	return !!((num & (1 << bit)) >> bit); };
@@ -25,3 +25,5 @@ blts.join_str = function (num, meta) {
 
 blts.array_object = function (list, values) {
 	return _.map(list, function (l) { return _.object(values, l); }); };
+
+module.exports = blts;

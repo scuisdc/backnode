@@ -5,13 +5,13 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
-<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 
 <link rel="import" href="valid-input.html">
 <link rel="import" href="vali-int.html">
 <link rel="import" href="checkbox-bitfield.html">
 
 <link rel="import" href="error-msg.html">
+<link rel="import" href="auth-behavior.html">
 
 <script src="/assets/blts.js"></script>
 
@@ -28,21 +28,21 @@
 		<div class="view" on-click="click_edit">{{value_display}}</div>
 		
 		<div class="not-related">
-			<iron-ajax id="ajax" url="http://localhost:8888/problems" method="POST" 
-				handle-as="json" on-response="update_finish" on-error="update_error"></iron-ajax>
+			<iron-ajax id="ajax" url="/problems" method="POST" handle-as="json"
+				on-response="update_finish" on-error="update_error" content-type="application/json"></iron-ajax>
 			
 			<paper-dialog id="editdialog" modal>
 				<h4>{{title}}</h4>
 				<div class="pure-form">
 					<template is="dom-if" if="{{use_bitfield(bitfield)}}">
-						<checkbox-bitfield bitfield="{{bitfield}}" value="{{value}}"></checkbox-bitfield>
+						<checkbox-bitfield bitfield="{{bitfield}}" value="{{value}}" disabled="[[!authed]]"></checkbox-bitfield>
 					</template>
 					<input is="iron-input" id="editbox" bind-value="{{value}}" hidden="{{use_bitfield(bitfield)}}"
-						prevent-invalid-input="{{have_validate(validate)}}" allowed-pattern="{{validate}}">
+						prevent-invalid-input="{{have_validate(validate)}}" allowed-pattern="{{validate}}" readonly$="[[!authed]]">
 				</div>
 				<div class="buttons">
 					<paper-button dialog-dismiss on-click="cancel_update">取消</paper-button>
-					<paper-button on-click="click_update">确定</paper-button>
+					<paper-button on-click="click_update" disabled="[[!authed]]">确定</paper-button>
 				</div>
 			</paper-dialog>
 			
@@ -55,6 +55,8 @@
 	
 	Polymer({
 		is: 'item-edit',
+		
+		behaviors: [ AuthBehavior ],
 		
 		properties: {
 			title: String,
@@ -101,6 +103,7 @@
 			var t = { ID: this.problem.ID };
 			t[this.field] = this.value;
 			
+			this.$.ajax.url = "/problems/" + this.problem.ID;
 			this.$.ajax.body = JSON.stringify([ t ]);
 			this.$.ajax.generateRequest();
 		},
