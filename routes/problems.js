@@ -16,14 +16,14 @@ var check_n_throw = function (err) { if (err) { throw err; } };
 
 var problem_keys_whitelist = [
 	'description', 'input', 'output', 'language_limit',
-	'memory_limit', 'time_limit', 'title'	
+	'memory_limit', 'time_limit', 'title', 'enable'	
 ];
 
 var file_keys = [ 'description', 'input', 'output' ];
 var file_keys_detail = [ 'description', 'input', 'output', 'in_file', 'out_file' ];
 var problem_keys_whitelist_common = [
 	'ID', 'description', 'input', 'output', 'language_limit',
-	'memory_limit', 'time_limit', 'title'
+	'memory_limit', 'time_limit', 'title', 'enable'
 ];
 var problem_keys_whitelist_detail = [
 	'ID', 'description', 'input', 'output', 'language_limit',
@@ -103,8 +103,9 @@ var fetch_problem_data = function (id, whitelist, file_keys, callback) {
 		});
 };
 
+// 150616 secondwtq - add enable
 router.get('/', function (req, res, next) {
-	db.connect('train').query('select ID, title, time_limit, memory_limit, language_limit from oj_problem order by ID', 
+	db.connect('train').query('select ID, title, time_limit, memory_limit, language_limit, enable from oj_problem order by ID', 
 		function (err, rows, fields) {
 			check_n_throw(err);
 			res.json(rows);
@@ -140,6 +141,9 @@ var fields_new_problem = {
 };
 
 // post to /problem, create a problem
+//
+// TODO:
+//	throw a 400 if field is wrong ...
 router.post('/', require_privilege('oj'), function (req, res, next) {
 	var connection = db.connect('train');
 	async.waterfall([
@@ -164,13 +168,11 @@ router.post('/', require_privilege('oj'), function (req, res, next) {
 			}, function (err, results) {
 				if (err) { callback(err, id); }
 				var db_data = _.chain(results).map(function (s) { return [ s[0], s[2] ]; }).object().value();
-				console.log(db_data);
 				connection.query('update oj_problem set ? where ID = ?', [ db_data, id ],
 					function (err, result) { callback(err, id); });
 			});
 		},
 		function (id, callback) {
-			console.log('3', _(req.body).pick(fields_new_problem.text));
 			connection.query('update oj_problem set ? where ID = ?',
 				[ _(req.body).pick(fields_new_problem.text), id ],
 				function (err, result) { callback(err); });

@@ -39,7 +39,7 @@
 </style>
 	
 <template>
-	<div id="btnadd-cont"><paper-fab icon="add" on-click="on_new_problem"></paper-fab></div>
+	<div id="btnadd-cont"><paper-fab icon="add" on-click="on_new_problem" disabled="{{!authed}}"></paper-fab></div>
 	<auth-status></auth-status>
 	<div>
 		<div class="toolbar-any" hidden="{{authed}}">

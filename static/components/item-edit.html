@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 
 <link rel="import" href="valid-input.html">
 <link rel="import" href="vali-int.html">
@@ -25,7 +26,12 @@
 	</style>
 	
 	<template>
-		<div class="view" on-click="click_edit">{{value_display}}</div>
+		<!-- 150616 secondwtq add 'just-a-checkbox' -->
+		<!-- TODO: a loading spinner for 'just-a-checkbox' -->
+		<div class="view" on-click="click_edit" hidden="[[justACheckbox]]">{{value_display}}</div>
+		<template is="dom-if" if="{{justACheckbox}}">
+			<paper-checkbox checked="{{value}}" on-change="click_update" disabled="[[!authed]]"></paper-checkbox>
+		</template>
 		
 		<div class="not-related">
 			<iron-ajax id="ajax" url="/problems" method="POST" handle-as="json"
@@ -73,6 +79,8 @@
 				value: undefined,
 				observer: 'bitfield_updated'
 			},
+			
+			justACheckbox: { type: Boolean, notify: true, value: false },
 			
 			validate: String,
 			
@@ -122,7 +130,7 @@
 		have_validate: function (validate) { return !(validate.length === 0); },
 			
 		use_bitfield: function (bitfield) { return !(bitfield === undefined); },
-		bitfield_updated: function () { this.parse_display(); },
+		bitfield_updated: function () { this.parse_display(); }
 	});
 
 </script>

@@ -36,7 +36,7 @@
 		<iron-ajax auto id="ajax" url="/problems" handle-as="json" last-response="{{problems}}" on-response="update_response" on-error="update_error"></iron-ajax>
 		<paper-material id="card">
 			<table class="pure-table pure-table-horizontal">
-				<thead><tr><td>编号</td><td>标题</td><td>时间限制</td><td>空间限制</td><td>语言限制</td><td></td></tr></thead>
+				<thead><tr><td>编号</td><td>标题</td><td>时间限制</td><td>空间限制</td><td>语言限制</td><td>启用</td><td></td></tr></thead>
 				<tbody class="pure-table-odd">
 					<template is="dom-repeat" items="{{problems}}">
 						<tr>
@@ -45,6 +45,7 @@
 							<td><item-edit problem="{{item}}" field="time_limit" validate="[0-9]" title="编辑 - 时间限制"></item-edit></td>
 							<td><item-edit problem="{{item}}" field="memory_limit" validate="[0-9]" title="编辑 - 内存限制"></item-edit></td>
 							<td><item-edit problem="{{item}}" field="language_limit" bitfield="{{languageBit}}" title="编辑 - 语言限制"></item-edit></td>
+							<td><item-edit problem="{{item}}" field="enable" title="编辑 - 启用" just-a-checkbox></item-edit></td>
 							<td><paper-icon-button icon="editor:mode-edit" on-click="fire_edit"></paper-icon-button></td>
 						</tr>
 					</template>
