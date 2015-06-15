@@ -37,27 +37,52 @@
 	Polymer({
 		is: 'problem-testcase',
 		
-		open: function () { this.$.editdialog.open(); },
-		close: function () { this.$.editdialog.close(); },
-		
-		fetch: function (id) {
-			if (id !== -1) {
-				this.$.ajaxfetch.param = JSON.stringify({ id: id });
-				this.$.ajaxfetch.url = '/problems/' + id + '/detail';
-				this.$.ajaxfetch.generateRequest();
+		properties: {
+			problem: {
+				type: Object,
+				notify: true
 			}
 		},
 		
-		fetch_response: function (e) { this.problem = e.detail.response; },
+		open: function () { this.$.editdialog.open(); },
+		close: function () { this.$.editdialog.close(); },
+		
+		fetch: function (problem) {
+			this.problem_exist = true;
+			problem = problem || { };
+			this.problem = problem;
+			this.$.ajaxfetch.param = JSON.stringify({ id: this.problem.ID });
+			this.$.ajaxfetch.url = '/problems/' + problem.ID + '/detail';
+			this.$.ajaxfetch.generateRequest();
+		},
+		
+		fetch_response: function (e) {
+			this.problem = _(this.problem).defaults(e.detail.response);
+			
+			this.notifyPath('problem.in_file', this.problem.in_file);
+			this.notifyPath('problem.out_file', this.problem.out_file);
+		},
 		
 		fetch_error: function (e) {
 			this.$.errormsg.show(e.detail.error);
 			this.close(); },
 			
+		newproblem: function (problem) {
+			this.problem_exist = false;
+			problem = problem || { };
+			_(problem).defaults({
+				in_file: '1 1',
+				out_file: '2'
+			});
+			this.problem = problem;
+		},
+			
 		update_upstream: function () {
-			this.$.ajaxpost.body = JSON.stringify([ this.problem ]);
-			this.$.ajaxpost.url = '/problems/' + this.problem.ID;
-			this.$.ajaxpost.generateRequest();
+			if (this.problem_exist) {
+				this.$.ajaxpost.body = JSON.stringify([ this.problem ]);
+				this.$.ajaxpost.url = '/problems/' + this.problem.ID;
+				this.$.ajaxpost.generateRequest();
+			} else { this.close(); }
 		},
 			
 		update_response: function (e) {

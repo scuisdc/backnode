@@ -36,9 +36,7 @@
 		<iron-ajax auto id="ajax" url="/problems" handle-as="json" last-response="{{problems}}" on-response="update_response" on-error="update_error"></iron-ajax>
 		<paper-material id="card">
 			<table class="pure-table pure-table-horizontal">
-				<thead>
-					<tr><td>ID</td><td>标题</td><td>时间限制</td><td>空间限制</td><td>语言限制</td><td></td></tr>
-				</thead>
+				<thead><tr><td>编号</td><td>标题</td><td>时间限制</td><td>空间限制</td><td>语言限制</td><td></td></tr></thead>
 				<tbody class="pure-table-odd">
 					<template is="dom-repeat" items="{{problems}}">
 						<tr>

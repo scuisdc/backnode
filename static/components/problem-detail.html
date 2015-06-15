@@ -18,8 +18,12 @@
 			padding: 1em; }
 		
 		.horizon-serperated {
+			/* 150615 secondwtq */
+			/* use flexbox to center them */
+			/* prefix for Safari */
 			display: -webkit-flex;
 			display: flex;
+			-webkit-justify-content: space-around;
 			justify-content: space-around;
 		}
 		
@@ -129,6 +133,7 @@
 				type: Object,
 				notify: true
 			},
+			problem_exist: Boolean,
 			languageBit: Object
 		},
 		
@@ -148,6 +153,7 @@
 		},
 		
 		fetch_response: function (e) {
+			this.problem_exist = true;
 			this.problem = e.detail.response;
 			setTimeout(function (that) { that.$.modal.undim(); }, 100, this);
 		},
@@ -156,13 +162,34 @@
 			this.$.errormsg.show(res.detail.error);
 			this.close(); },
 			
+		newproblem: function () {
+			this.problem_exist = false;
+			this.problem = {
+				ID: -1,
+				title: '这里是标题',
+				time_limit: 128,
+				memory_limit: 256,
+				language_limit: 0,
+				description: '问题描述',
+				input: '1 1', output: '2',
+			};
+		},
+			
 		more_detail_open: function () {
-			this.$.testcases.fetch(this.problem.ID);
-			this.$.testcases.open(); },
+			if (this.problem_exist) {
+				this.$.testcases.fetch(this.problem);
+			} else { this.$.testcases.newproblem(this.problem); }
+			this.$.testcases.open();
+		},
 			
 		update_upstream: function () {
-			this.$.ajaxpost.body = JSON.stringify([ this.problem ]);
-			this.$.ajaxpost.url = '/problems/' + this.problem.ID;
+			if (this.problem_exist) {
+				this.$.ajaxpost.body = JSON.stringify([ this.problem ]);
+				this.$.ajaxpost.url = '/problems/' + this.problem.ID;
+			} else {
+				this.$.ajaxpost.body = JSON.stringify(this.problem);
+				this.$.ajaxpost.url = '/problems';
+			}
 			this.$.ajaxpost.generateRequest();
 			this.$.modal.dim();
 		},

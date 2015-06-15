@@ -1,6 +1,7 @@
 
 var path = require('path');
 var fs = require('fs');
+
 var _ = require('underscore');
 var async = require('async');
 
@@ -27,7 +28,7 @@ var problem_keys_whitelist_common = [
 var problem_keys_whitelist_detail = [
 	'ID', 'description', 'input', 'output', 'language_limit',
 	'memory_limit', 'time_limit', 'title', 'in_file', 'out_file'
-]
+];
 
 var split_update_request = function (arr, ignore) {
 	ignore = ignore || file_keys;
@@ -133,6 +134,58 @@ router.get('/:id/detail', require_privilege('oj'), function (req, res, next) {
 		});
 });
 
+var fields_new_problem = {
+	text: [ 'title', 'language_limit', 'time_limit', 'memory_limit' ],
+	file: [ 'description', 'in_file', 'out_file', 'input', 'output' ]	
+};
+
+// post to /problem, create a problem
+router.post('/', require_privilege('oj'), function (req, res, next) {
+	var connection = db.connect('train');
+	async.waterfall([
+		function (callback) {	// fire!
+			connection.beginTransaction(function (err) {
+				callback(err); }); },
+		function (callback) {	// ahh? just get ready and hold an ID
+			connection.query('insert into oj_problem (in_file, out_file) values (?, ?);', [ '', '' ],
+				function (err, result) { callback(err, result.insertId); }); },
+		function (id, callback) {	// create a dir
+			var problem_path = path.join(config.train_rootdir, './TPD/problem/' + id);
+			fs.mkdir(problem_path, function (err) {
+				// if it exists, then doesnot matter, just kick off it :)
+				if (err && err.code == 'EEXIST') { err = null; }
+				callback(err, id, problem_path, './TPD/problem/' + id); });
+		},
+		function (id, problem_path, org_path, callback) {
+			async.map(fields_new_problem.file, function (field, callback) {
+				var ret = [ field, path.join(problem_path, field), path.join(org_path, field) ];
+				fs.writeFile(ret[1], req.body[field] || '', function (err) { callback(err, ret); });
+				return ret;
+			}, function (err, results) {
+				if (err) { callback(err, id); }
+				var db_data = _.chain(results).map(function (s) { return [ s[0], s[2] ]; }).object().value();
+				console.log(db_data);
+				connection.query('update oj_problem set ? where ID = ?', [ db_data, id ],
+					function (err, result) { callback(err, id); });
+			});
+		},
+		function (id, callback) {
+			console.log('3', _(req.body).pick(fields_new_problem.text));
+			connection.query('update oj_problem set ? where ID = ?',
+				[ _(req.body).pick(fields_new_problem.text), id ],
+				function (err, result) { callback(err); });
+		},
+		function (callback) { // commit! pull request!
+			connection.commit(function (err) { callback(err); }); }
+	], function (err) {
+		if (err) {
+			return connection.rollback(function () {
+				res.status(500).send(err); });
+		}
+		res.status(200).json({ succeeded: true });
+	});
+});
+
 router.post('/:id', require_privilege('oj'), function (req, res, next) {
 	var connection = db.connect('train');
 	// TBH we should use less queries
@@ -141,6 +194,9 @@ router.post('/:id', require_privilege('oj'), function (req, res, next) {
 		check_n_throw(err);
 		var splited = split_update_request(req.body);
 		
+		// 150615 secondwtq - it's just A PICE OF SHIIIT, but just work, however
+		//	evt. someone would gonna throw it away and replace with something better
+		//  don't care 
 		var func_update = function (arr) {
 			if (arr.length) {
 				var to_be_updated = arr.pop();
@@ -148,8 +204,7 @@ router.post('/:id', require_privilege('oj'), function (req, res, next) {
 				to_be_updated = _.chain(to_be_updated).omit('ID').pairs().first().value();
 				connection.query('update oj_problem set ?? = ? where ID = ?',
 					[ to_be_updated[0], to_be_updated[1], id ], function (err, result) {
-						if (err) {
-							connection.rollback(function () { throw err; }); }
+						if (err) { connection.rollback(function () { throw err; }); }
 						func_update(arr);
 					});
 			} else {
