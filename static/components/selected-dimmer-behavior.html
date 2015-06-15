@@ -1,0 +1,23 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="dimmed-div.html">
+
+<!-- 150615 secondwtq added for <problem-list> -->
+<script>
+	SelectedDimmerBehavior = {
+		dim_target: function (target) {
+			if (target._selected_dimmer !== undefined) {
+				target._selected_dimmer.dimmed = true;
+			} else {
+				target._selected_dimmer = document.createElement('dimmed-div');
+				target.appendChild(target._selected_dimmer);
+				this.dim_target(target);
+			} 
+		},
+		undim_target: function (target) {
+			if (target._selected_dimmer !== undefined) {
+				target._selected_dimmer.dimmed = false; }
+		},
+	};
+</script>

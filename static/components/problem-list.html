@@ -10,6 +10,8 @@
 <link rel="import" href="../bower_components/iron-icons/editor-icons.html">
 
 <link rel="import" href="item-edit.html">
+<link rel="import" href="selected-dimmer-behavior.html">
+<link rel="import" href="error-msg.html">
 
 <dom-module id="problem-list">
 	<link rel="stylesheet" href="/assets/pure-min.css">
@@ -20,11 +22,7 @@
 			-webkit-justify-content: center;
 			justify-content: center;
 		}
-		
-		table {
-			border: 1px solid lightgray;
-			@apply(--list-table);
-		}
+		/* 150615 secondwtq: delete unused styles (we have flexbox now) */
 		
 		table thead {
 			text-align: center; }
@@ -35,8 +33,8 @@
 	
 	<template>
 		
-		<iron-ajax auto url="/problems" handle-as="json" last-response="{{problems}}"></iron-ajax>
-		<paper-material>
+		<iron-ajax auto id="ajax" url="/problems" handle-as="json" last-response="{{problems}}" on-response="update_response" on-error="update_error"></iron-ajax>
+		<paper-material id="card">
 			<table class="pure-table pure-table-horizontal">
 				<thead>
 					<tr><td>ID</td><td>标题</td><td>时间限制</td><td>空间限制</td><td>语言限制</td><td></td></tr>
@@ -55,6 +53,8 @@
 				</tbody>
 			</table>
 		</paper-material>
+		<iron-signals on-iron-signal-problem-list-update="update_list"></iron-signals>
+		<error-msg id="errormsg" modal></error-msg>
 	</template>
 </dom-module>
 
@@ -65,8 +65,21 @@
 	Polymer({
 		is: 'problem-list',
 		
+		properties: { languageBit: { type: Object, notify: true } },
+		behaviors: [ SelectedDimmerBehavior ],
+		
 		fire_edit: function (e) { this.fire('iron-signal', { name: 'edit-problem', data: e.model.item }); },
-			
-		properties: { languageBit: { type: Object, notify: true } }
+		
+		// 150615 secondwtq
+		// updated, problem-list-update signal, partial dimmer, error-msg 
+		attached: function () { this.dim_target(this.$.card); },
+
+		update_list: function () {
+			this.dim_target(this.$.card);
+			this.$.ajax.generateRequest(); },
+		update_response: function () {
+			this.undim_target(this.$.card); },
+		update_error: function(e) {
+			this.$.errormsg.show('更新问题列表时出现错误: \n' + e.detail.error); }
 	});
 </script>

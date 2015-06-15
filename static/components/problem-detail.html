@@ -76,13 +76,16 @@
 								</div>
 							</div>
 							<div class="pure-control-group pure-u-1">
+								<!-- 150615 secondwtq: add input validation -->
 								<span>
 									<label for="i-time">时间限制: </label>
-									<input is="iron-input" id="i-time" bind-value="{{problem.time_limit}}" readonly$="[[!authed]]">
+									<input is="iron-input" id="i-time" prevent-invalid-input="true" allowed-pattern="[0-9]"
+										bind-value="{{problem.time_limit}}" readonly$="[[!authed]]">
 								</span>
 								<span>
 									<label for="i-memory">空间限制: </label>
-									<input is="iron-input" id="i-memory" bind-value="{{problem.memory_limit}}" readonly$="[[!authed]]">
+									<input is="iron-input" id="i-memory" prevent-invalid-input="true" allowed-pattern="[0-9]" 
+										bind-value="{{problem.memory_limit}}" readonly$="[[!authed]]">
 								</span>
 							</div>
 							<div>
@@ -167,6 +170,7 @@
 		update_response: function (e) {
 			this.$.modal.undim();
 			this.close();
+			this.fire('iron-signal', { name: "problem-list-update", data: { } });
 		},
 		
 		update_error: function (e) {
