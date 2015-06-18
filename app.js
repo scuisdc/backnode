@@ -55,21 +55,22 @@ passport.deserializeUser(function (user, done) {
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(function (req, res, next) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-	return next();
-});
+if (config.cross_origin) {
+	app.use(function (req, res, next) {
+		res.header('Access-Control-Allow-Origin', '*');
+		res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+		return next();
+	});
+}
 
 // app.use(function (err, req, res, next) {
 // 	res.status(500).json(err);
 // });
 
 var route_auth = require('./routes/auth');
-app.use('/user', route_auth);
-
 var route_problems = require('./routes/problems');
-app.use('/problems', route_problems);
+app.use('/api/user', route_auth);
+app.use('/api/problems', route_problems);
 
 var server = app.listen(process.env.PORT || 8888, process.env.HOST || 'localhost', function () {
 	var host = server.address().address;

@@ -34,7 +34,7 @@
 		</template>
 		
 		<div class="not-related">
-			<iron-ajax id="ajax" url="/problems" method="POST" handle-as="json"
+			<iron-ajax id="ajax" url="/api/problems" method="POST" handle-as="json"
 				on-response="update_finish" on-error="update_error" content-type="application/json"></iron-ajax>
 			
 			<paper-dialog id="editdialog" modal>
@@ -111,7 +111,7 @@
 			var t = { ID: this.problem.ID };
 			t[this.field] = this.value;
 			
-			this.$.ajax.url = "/problems/" + this.problem.ID;
+			this.$.ajax.url = "/api/problems/" + this.problem.ID;
 			this.$.ajax.body = JSON.stringify([ t ]);
 			this.$.ajax.generateRequest();
 		},

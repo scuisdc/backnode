@@ -5,8 +5,8 @@
 
 <dom-module id="auth-status">
 	<template>
-		<iron-ajax auto id="ajax" url="/user/auth" method="GET" on-response="login_check_res" on-error="login_error"></iron-ajax>
-		<iron-ajax id="ajax_logout" url="/user/logout" method="POST" on-response="logout_success" on-error="logout_error"></iron-ajax>
+		<iron-ajax auto id="ajax" url="/api/user/auth" method="GET" on-response="login_check_res" on-error="login_error"></iron-ajax>
+		<iron-ajax id="ajax_logout" url="/api/user/logout" method="POST" on-response="logout_success" on-error="logout_error"></iron-ajax>
 	</template>
 </dom-module>
 

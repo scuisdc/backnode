@@ -4,6 +4,7 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 
 <link rel="import" href="horizon-modal.html">
 <link rel="import" href="error-msg.html">
@@ -52,7 +53,12 @@
 			width: 100%; }
 			
 		#button-group {
-			float: right; }
+			float: right;
+			display: -webkit-flex;
+			display: flex;
+			-webkit-align-items: center;
+			align-items: center;
+		}
 		
 		textarea {
 			min-height: 8em; }
@@ -74,6 +80,8 @@
 								<label for="i-title">标题: </label>
 								<input is="iron-input" id="i-title" bind-value="{{problem.title}}" readonly$="[[!authed]]">
 								<div id="button-group">
+									<!-- 150615 secondwtq: add 'enable' flag, adjusted style (used flexbox for alignment) -->
+									<paper-checkbox disabled="[[!authed]]" checked="{{problem.enable}}">启用</paper-checkbox>
 									<paper-button close-horizon>关闭</paper-button>
 									<paper-button disabled="[[!authed]]" on-click="more_detail_open">编辑测试用例</paper-button>
 									<paper-button disabled="[[!authed]]" on-click="update_upstream">提交</paper-button>
@@ -116,8 +124,8 @@
 				</div>
 			</horizon-modal>
 			<problem-testcase id="testcases"></problem-testcase>
-			<iron-ajax id="ajaxfetch" url="" handle-as="json" on-response="fetch_response" on-error="fetch_error"></iron-ajax>
-			<iron-ajax id="ajaxpost" url="" method="POST" handle-as="json" content-type="application/json"
+			<iron-ajax id="ajaxfetch" handle-as="json" on-response="fetch_response" on-error="fetch_error"></iron-ajax>
+			<iron-ajax id="ajaxpost" method="POST" handle-as="json" content-type="application/json"
 				on-response="update_response" on-error="update_error"></iron-ajax>
 			<error-msg id="errormsg"></error-msg>
 		</div>
@@ -146,7 +154,7 @@
 		fetch: function (id) {
 			if (id !== -1) {
 				this.$.ajaxfetch.param = JSON.stringify({ id: id });
-				this.$.ajaxfetch.url = '/problems/' + id;
+				this.$.ajaxfetch.url = '/api/problems/' + id;
 				this.$.modal.dim();
 				this.$.ajaxfetch.generateRequest();
 			}
@@ -169,9 +177,10 @@
 				title: '这里是标题',
 				time_limit: 128,
 				memory_limit: 256,
-				language_limit: 0,
+				language_limit: 1,
 				description: '问题描述',
 				input: '1 1', output: '2',
+				enable: true
 			};
 		},
 			
@@ -185,10 +194,10 @@
 		update_upstream: function () {
 			if (this.problem_exist) {
 				this.$.ajaxpost.body = JSON.stringify([ this.problem ]);
-				this.$.ajaxpost.url = '/problems/' + this.problem.ID;
+				this.$.ajaxpost.url = '/api/problems/' + this.problem.ID;
 			} else {
 				this.$.ajaxpost.body = JSON.stringify(this.problem);
-				this.$.ajaxpost.url = '/problems';
+				this.$.ajaxpost.url = '/api/problems';
 			}
 			this.$.ajaxpost.generateRequest();
 			this.$.modal.dim();

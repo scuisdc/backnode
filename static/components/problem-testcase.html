@@ -26,8 +26,8 @@
 				<paper-button on-click="update_upstream">提交</paper-button>
 			</div>
 		</paper-dialog>
-		<iron-ajax id="ajaxfetch" url="" handle-as="json" on-response="fetch_response" on-error="fetch_error"></iron-ajax>
-		<iron-ajax id="ajaxpost" url="" method="POST" handle-as="json" content-type="application/json"
+		<iron-ajax id="ajaxfetch" handle-as="json" on-response="fetch_response" on-error="fetch_error"></iron-ajax>
+		<iron-ajax id="ajaxpost" method="POST" handle-as="json" content-type="application/json"
 				on-response="update_response" on-error="update_error"></iron-ajax>
 		<error-msg id="errormsg"></error-msg>
 	</template>
@@ -52,7 +52,7 @@
 			problem = problem || { };
 			this.problem = problem;
 			this.$.ajaxfetch.param = JSON.stringify({ id: this.problem.ID });
-			this.$.ajaxfetch.url = '/problems/' + problem.ID + '/detail';
+			this.$.ajaxfetch.url = '/api/problems/' + problem.ID + '/detail';
 			this.$.ajaxfetch.generateRequest();
 		},
 		
@@ -80,7 +80,7 @@
 		update_upstream: function () {
 			if (this.problem_exist) {
 				this.$.ajaxpost.body = JSON.stringify([ this.problem ]);
-				this.$.ajaxpost.url = '/problems/' + this.problem.ID;
+				this.$.ajaxpost.url = '/api/problems/' + this.problem.ID;
 				this.$.ajaxpost.generateRequest();
 			} else { this.close(); }
 		},

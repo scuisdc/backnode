@@ -60,7 +60,7 @@
 			var username = this.crypto_func(this.$.txtusername.value);
 			var passwd = this.crypto_func(this.$.txtpasswd.value);
 			
-			this.$.ajax.url = "/user/auth";
+			this.$.ajax.url = "/api/user/auth";
 			this.$.ajax.body = JSON.stringify({ username: username, password: passwd });
 			this.$.ajax.generateRequest();
 		},
